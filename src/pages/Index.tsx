@@ -32,6 +32,7 @@ import {
   loadSketches,
   saveSketches,
 } from "@/components/SketchGallery";
+import { ImageToPixels } from "@/components/ImageToPixels";
 
 const TIPS = [
   "Start low-res. Magic happens at 16×16.",
