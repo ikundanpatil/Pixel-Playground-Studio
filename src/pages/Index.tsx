@@ -141,6 +141,10 @@ const Index = () => {
     toast.success("Sketch loaded", { description: `${sketch.size}×${sketch.size}` });
   };
 
+  const handleImagePixels = (pixels: string[]) => {
+    handleRef.current?.loadSnapshot({ size, pixels });
+  };
+
   return (
     <TooltipProvider delayDuration={150}>
       <div className="min-h-screen bg-background text-foreground">
