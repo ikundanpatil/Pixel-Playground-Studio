@@ -466,7 +466,7 @@ const Index = () => {
                 <SketchGallery onLoad={handleLoad} refreshKey={galleryKey} />
               </Panel>
 
-              <Panel label="06 / Shortcuts">
+              <Panel label="07 / Shortcuts">
                 <ul className="space-y-2 text-sm">
                   <Shortcut keys={["C"]} label="Pencil" />
                   <Shortcut keys={["E"]} label="Eraser" />
@@ -479,7 +479,7 @@ const Index = () => {
                 </ul>
               </Panel>
 
-              <Panel label="07 / Tips">
+              <Panel label="08 / Tips">
                 <ul className="space-y-3">
                   {TIPS.map((t, i) => (
                     <li key={i} className="flex gap-2 text-sm leading-snug">
@@ -499,7 +499,7 @@ const Index = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
               <div>
                 <div className="mono text-xs uppercase tracking-widest text-brand-pink mb-2">
-                  / 08 — Inspiration
+                  / 09 — Inspiration
                 </div>
                 <h2 className="font-display text-4xl md:text-6xl text-brand-ink leading-none">
                   Made by the<br />
