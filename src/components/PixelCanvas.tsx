@@ -1,23 +1,39 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-export type Tool = "pencil" | "eraser";
+export type Tool = "pencil" | "eraser" | "fill" | "eyedropper";
 
 export interface PixelCanvasHandle {
   exportPNG: (filename?: string) => void;
   copyData: () => Promise<void>;
+  getSnapshot: () => { size: number; pixels: string[] };
+  loadSnapshot: (snap: { size: number; pixels: string[] }) => void;
 }
 
 interface PixelCanvasProps {
   size: number;
   color: string;
   tool: Tool;
+  zoom: number; // 0.5 - 2
+  showGrid: boolean;
   onColorUsed?: (color: string) => void;
+  onPickColor?: (color: string) => void;
+  onSizeChange?: (n: number) => void;
   registerHandle?: (handle: PixelCanvasHandle) => void;
 }
 
 const TRANSPARENT = "";
 
-export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: PixelCanvasProps) => {
+export const PixelCanvas = ({
+  size,
+  color,
+  tool,
+  zoom,
+  showGrid,
+  onColorUsed,
+  onPickColor,
+  onSizeChange,
+  registerHandle,
+}: PixelCanvasProps) => {
   const makeEmpty = useCallback((n: number) => Array.from({ length: n * n }, () => TRANSPARENT), []);
   const [pixels, setPixels] = useState<string[]>(() => makeEmpty(size));
   const [history, setHistory] = useState<string[][]>([]);
@@ -25,7 +41,6 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
   const [hover, setHover] = useState<{ x: number; y: number } | null>(null);
   const drawingRef = useRef(false);
   const strokeStartRef = useRef<string[] | null>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   // Reset on grid size change
   useEffect(() => {
@@ -34,13 +49,17 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
     setFuture([]);
   }, [size, makeEmpty]);
 
+  const pushHistory = useCallback((snap: string[]) => {
+    setHistory((h) => [...h.slice(-49), snap]);
+    setFuture([]);
+  }, []);
+
   const commitStroke = useCallback(() => {
     if (strokeStartRef.current) {
-      setHistory((h) => [...h.slice(-49), strokeStartRef.current!]);
-      setFuture([]);
+      pushHistory(strokeStartRef.current);
       strokeStartRef.current = null;
     }
-  }, []);
+  }, [pushHistory]);
 
   const paintAt = useCallback(
     (idx: number) => {
@@ -57,11 +76,37 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
     [color, tool, onColorUsed],
   );
 
+  const floodFill = useCallback(
+    (startIdx: number) => {
+      setPixels((prev) => {
+        const target = prev[startIdx];
+        const replacement = color;
+        if (target === replacement) return prev;
+        const next = prev.slice();
+        const stack = [startIdx];
+        while (stack.length) {
+          const i = stack.pop()!;
+          if (next[i] !== target) continue;
+          next[i] = replacement;
+          const x = i % size;
+          const y = Math.floor(i / size);
+          if (x > 0) stack.push(i - 1);
+          if (x < size - 1) stack.push(i + 1);
+          if (y > 0) stack.push(i - size);
+          if (y < size - 1) stack.push(i + size);
+        }
+        pushHistory(prev);
+        onColorUsed?.(color);
+        return next;
+      });
+    },
+    [color, size, onColorUsed, pushHistory],
+  );
+
   const handleClear = useCallback(() => {
-    setHistory((h) => [...h.slice(-49), pixels.slice()]);
-    setFuture([]);
+    pushHistory(pixels.slice());
     setPixels(makeEmpty(size));
-  }, [pixels, size, makeEmpty]);
+  }, [pixels, size, makeEmpty, pushHistory]);
 
   const handleUndo = useCallback(() => {
     setHistory((h) => {
@@ -83,7 +128,6 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
     });
   }, [pixels]);
 
-  // Render to offscreen canvas + export
   const renderToCanvas = useCallback(
     (scale = 16) => {
       const canvas = document.createElement("canvas");
@@ -105,6 +149,7 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
     [pixels, size],
   );
 
+  // Register imperative handle
   useEffect(() => {
     if (!registerHandle) return;
     registerHandle({
@@ -116,13 +161,27 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
         link.click();
       },
       copyData: async () => {
-        const data = { size, pixels };
-        await navigator.clipboard.writeText(JSON.stringify(data));
+        await navigator.clipboard.writeText(JSON.stringify({ size, pixels }));
+      },
+      getSnapshot: () => ({ size, pixels: pixels.slice() }),
+      loadSnapshot: (snap) => {
+        if (snap.size !== size) {
+          onSizeChange?.(snap.size);
+          // Defer pixel set until next render after size change
+          setTimeout(() => {
+            setPixels(snap.pixels.slice());
+            setHistory([]);
+            setFuture([]);
+          }, 0);
+        } else {
+          pushHistory(pixels.slice());
+          setPixels(snap.pixels.slice());
+        }
       },
     });
-  }, [registerHandle, renderToCanvas, pixels, size]);
+  }, [registerHandle, renderToCanvas, pixels, size, onSizeChange, pushHistory]);
 
-  // Expose actions via custom events for keyboard
+  // Keyboard: undo/redo
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
@@ -137,41 +196,7 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
     return () => window.removeEventListener("keydown", handler);
   }, [handleUndo, handleRedo]);
 
-  // Pointer interaction on overlay
-  const handlePointerDown = (e: React.PointerEvent) => {
-    drawingRef.current = true;
-    (e.target as Element).setPointerCapture(e.pointerId);
-    paintFromEvent(e);
-  };
-  const handlePointerMove = (e: React.PointerEvent) => {
-    updateHover(e);
-    if (drawingRef.current) paintFromEvent(e);
-  };
-  const handlePointerUp = () => {
-    if (drawingRef.current) {
-      drawingRef.current = false;
-      commitStroke();
-    }
-  };
-
-  const paintFromEvent = (e: React.PointerEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = Math.floor(((e.clientX - rect.left) / rect.width) * size);
-    const y = Math.floor(((e.clientY - rect.top) / rect.height) * size);
-    if (x < 0 || y < 0 || x >= size || y >= size) return;
-    paintAt(y * size + x);
-  };
-  const updateHover = (e: React.PointerEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const x = Math.floor(((e.clientX - rect.left) / rect.width) * size);
-    const y = Math.floor(((e.clientY - rect.top) / rect.height) * size);
-    if (x >= 0 && y >= 0 && x < size && y < size) setHover({ x, y });
-    else setHover(null);
-  };
-
-  // Expose helpers via parent through window event bridge would be overkill; instead,
-  // we surface controls below the canvas via a small toolbar inside the parent component.
-  // Provide them through a context-less ref on a global event.
+  // Window-level action bridge
   useEffect(() => {
     const undo = () => handleUndo();
     const redo = () => handleRedo();
@@ -186,6 +211,52 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
     };
   }, [handleUndo, handleRedo, handleClear]);
 
+  // Pointer interaction
+  const handlePointerDown = (e: React.PointerEvent) => {
+    const idx = idxFromEvent(e);
+    if (idx == null) return;
+    if (tool === "fill") {
+      floodFill(idx);
+      return;
+    }
+    if (tool === "eyedropper") {
+      const c = pixels[idx];
+      if (c) onPickColor?.(c);
+      return;
+    }
+    drawingRef.current = true;
+    (e.target as Element).setPointerCapture(e.pointerId);
+    paintAt(idx);
+  };
+  const handlePointerMove = (e: React.PointerEvent) => {
+    updateHover(e);
+    if (drawingRef.current && (tool === "pencil" || tool === "eraser")) {
+      const idx = idxFromEvent(e);
+      if (idx != null) paintAt(idx);
+    }
+  };
+  const handlePointerUp = () => {
+    if (drawingRef.current) {
+      drawingRef.current = false;
+      commitStroke();
+    }
+  };
+
+  const idxFromEvent = (e: React.PointerEvent): number | null => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = Math.floor(((e.clientX - rect.left) / rect.width) * size);
+    const y = Math.floor(((e.clientY - rect.top) / rect.height) * size);
+    if (x < 0 || y < 0 || x >= size || y >= size) return null;
+    return y * size + x;
+  };
+  const updateHover = (e: React.PointerEvent) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const x = Math.floor(((e.clientX - rect.left) / rect.width) * size);
+    const y = Math.floor(((e.clientY - rect.top) / rect.height) * size);
+    if (x >= 0 && y >= 0 && x < size && y < size) setHover({ x, y });
+    else setHover(null);
+  };
+
   const cellStyle = useMemo(
     () => ({
       gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))`,
@@ -194,48 +265,59 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
     [size],
   );
 
+  const cursor =
+    tool === "fill"
+      ? "cell"
+      : tool === "eyedropper"
+      ? "copy"
+      : "crosshair";
+
   return (
     <div className="flex flex-col items-center gap-3 w-full">
-      <div
-        ref={containerRef}
-        className="relative w-full max-w-[640px] aspect-square rounded-lg border-2 border-brand-ink shadow-brutal bg-white overflow-hidden"
-      >
-        {/* Checkerboard background for transparency */}
+      <div className="w-full overflow-auto flex justify-center">
         <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage:
-              "linear-gradient(45deg, hsl(var(--soft)) 25%, transparent 25%), linear-gradient(-45deg, hsl(var(--soft)) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, hsl(var(--soft)) 75%), linear-gradient(-45deg, transparent 75%, hsl(var(--soft)) 75%)",
-            backgroundSize: "16px 16px",
-            backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0",
-          }}
-          aria-hidden
-        />
-
-        {/* Pixel grid */}
-        <div
-          className="absolute inset-0 grid select-none touch-none cursor-crosshair"
-          style={cellStyle}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerLeave={() => setHover(null)}
-          role="img"
-          aria-label={`Pixel canvas ${size} by ${size}`}
+          className="relative aspect-square border-2 border-brand-ink shadow-brutal bg-white overflow-hidden rounded-lg transition-[width] duration-200"
+          style={{ width: `min(100%, ${640 * zoom}px)` }}
         >
-          {pixels.map((c, i) => (
-            <div
-              key={i}
-              style={{
-                backgroundColor: c || undefined,
-                boxShadow: size <= 32 ? "inset 0 0 0 1px hsl(var(--grid-line) / 0.6)" : undefined,
-              }}
-            />
-          ))}
+          {/* Checkerboard background for transparency */}
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(45deg, hsl(var(--soft)) 25%, transparent 25%), linear-gradient(-45deg, hsl(var(--soft)) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, hsl(var(--soft)) 75%), linear-gradient(-45deg, transparent 75%, hsl(var(--soft)) 75%)",
+              backgroundSize: "16px 16px",
+              backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0",
+            }}
+            aria-hidden
+          />
+
+          <div
+            className="absolute inset-0 grid select-none touch-none"
+            style={{ ...cellStyle, cursor }}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={() => setHover(null)}
+            role="img"
+            aria-label={`Pixel canvas ${size} by ${size}`}
+          >
+            {pixels.map((c, i) => (
+              <div
+                key={i}
+                style={{
+                  backgroundColor: c || undefined,
+                  boxShadow:
+                    showGrid && size <= 48
+                      ? "inset 0 0 0 1px hsl(var(--grid-line) / 0.6)"
+                      : undefined,
+                }}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-3 mono text-xs text-muted-foreground">
+      <div className="flex items-center gap-3 mono text-xs text-muted-foreground flex-wrap justify-center">
         <span>
           GRID <span className="text-brand-ink font-bold">{size}×{size}</span>
         </span>
@@ -249,6 +331,10 @@ export const PixelCanvas = ({ size, color, tool, onColorUsed, registerHandle }: 
         <span className="w-1 h-1 rounded-full bg-brand-gray" />
         <span>
           PIXELS <span className="text-brand-ink font-bold">{pixels.filter(Boolean).length}</span>
+        </span>
+        <span className="w-1 h-1 rounded-full bg-brand-gray" />
+        <span>
+          ZOOM <span className="text-brand-ink font-bold">{Math.round(zoom * 100)}%</span>
         </span>
       </div>
     </div>

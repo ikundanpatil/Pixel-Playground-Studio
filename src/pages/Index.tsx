@@ -5,12 +5,18 @@ import {
   Eraser,
   ExternalLink,
   Eye,
+  Grid3x3,
   Keyboard,
+  PaintBucket,
   Pencil,
+  Pipette,
   Redo2,
+  Save,
   Sparkles,
   Trash2,
   Undo2,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +25,13 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { PixelCanvas, type PixelCanvasHandle, type Tool } from "@/components/PixelCanvas";
 import { PRESETS, PresetSwatches } from "@/components/PresetSwatches";
 import { InspirationGallery } from "@/components/InspirationGallery";
+import {
+  type SavedSketch,
+  SketchGallery,
+  buildThumb,
+  loadSketches,
+  saveSketches,
+} from "@/components/SketchGallery";
 
 const TIPS = [
   "Start low-res. Magic happens at 16×16.",
@@ -27,11 +40,16 @@ const TIPS = [
   "Outline with a darker shade of your fill color, not pure black.",
 ];
 
+const ZOOM_STEPS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+
 const Index = () => {
   const [size, setSize] = useState(16);
   const [color, setColor] = useState("#FF1493");
   const [tool, setTool] = useState<Tool>("pencil");
+  const [zoom, setZoom] = useState(1);
+  const [showGrid, setShowGrid] = useState(true);
   const [recent, setRecent] = useState<string[]>(["#FF1493"]);
+  const [galleryKey, setGalleryKey] = useState(0);
   const handleRef = useRef<PixelCanvasHandle | null>(null);
 
   const trackColor = (c: string) => {
@@ -47,17 +65,38 @@ const Index = () => {
     trackColor(c);
   };
 
-  // Keyboard shortcuts (tools)
+  const onEyedropPicked = (c: string) => {
+    setColor(c);
+    setTool("pencil");
+    trackColor(c);
+    toast.success("Color sampled", { description: c.toUpperCase() });
+  };
+
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement;
       if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
-      if (e.key.toLowerCase() === "c") setTool("pencil");
-      if (e.key.toLowerCase() === "e") setTool("eraser");
+      const k = e.key.toLowerCase();
+      if (k === "c") setTool("pencil");
+      if (k === "e") setTool("eraser");
+      if (k === "f") setTool("fill");
+      if (k === "i") setTool("eyedropper");
+      if (k === "g") setShowGrid((v) => !v);
+      if (k === "+" || (e.shiftKey && k === "=")) bumpZoom(1);
+      if (k === "-") bumpZoom(-1);
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
+  const bumpZoom = (dir: 1 | -1) => {
+    setZoom((z) => {
+      const idx = ZOOM_STEPS.indexOf(z);
+      const nextIdx = Math.max(0, Math.min(ZOOM_STEPS.length - 1, idx + dir));
+      return ZOOM_STEPS[nextIdx];
+    });
+  };
 
   const handleDownload = () => {
     handleRef.current?.exportPNG();
@@ -71,6 +110,34 @@ const Index = () => {
     } catch {
       toast.error("Couldn't copy", { description: "Clipboard permission denied" });
     }
+  };
+
+  const handleSave = () => {
+    const snap = handleRef.current?.getSnapshot();
+    if (!snap) return;
+    const hasArt = snap.pixels.some(Boolean);
+    if (!hasArt) {
+      toast("Canvas is empty", { description: "Draw something first." });
+      return;
+    }
+    const sketch: SavedSketch = {
+      id: crypto.randomUUID(),
+      name: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      size: snap.size,
+      pixels: snap.pixels,
+      thumb: buildThumb(snap.size, snap.pixels),
+      createdAt: Date.now(),
+    };
+    const next = [sketch, ...loadSketches()].slice(0, 24);
+    saveSketches(next);
+    setGalleryKey((k) => k + 1);
+    toast.success("Sketch saved", { description: `Stored locally · ${snap.size}×${snap.size}` });
+  };
+
+  const handleLoad = (sketch: SavedSketch) => {
+    handleRef.current?.loadSnapshot({ size: sketch.size, pixels: sketch.pixels });
+    if (sketch.size !== size) setSize(sketch.size);
+    toast.success("Sketch loaded", { description: `${sketch.size}×${sketch.size}` });
   };
 
   return (
@@ -119,7 +186,7 @@ const Index = () => {
                   <span className="w-2 h-2 bg-brand-pink" />
                 </div>
                 <span className="mono text-xs uppercase tracking-widest text-brand-ink">
-                  Pixel/Studio · v1.0
+                  Pixel/Studio · v1.1
                 </span>
               </div>
               <a
@@ -133,7 +200,7 @@ const Index = () => {
             <div className="grid md:grid-cols-12 gap-8 items-end">
               <div className="md:col-span-8">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan border-2 border-brand-ink mono text-[11px] uppercase tracking-widest mb-6">
-                  <Sparkles className="w-3 h-3" /> Draw · Export · Repeat
+                  <Sparkles className="w-3 h-3" /> Now with fill, eyedrop & zoom
                 </div>
                 <h1 className="font-display text-5xl sm:text-7xl md:text-[8rem] leading-[0.85] text-brand-ink text-balance">
                   PIXEL
@@ -185,6 +252,20 @@ const Index = () => {
                     label="Eraser"
                     hint="E"
                     icon={<Eraser className="w-4 h-4" />}
+                  />
+                  <ToolButton
+                    active={tool === "fill"}
+                    onClick={() => setTool("fill")}
+                    label="Fill"
+                    hint="F"
+                    icon={<PaintBucket className="w-4 h-4" />}
+                  />
+                  <ToolButton
+                    active={tool === "eyedropper"}
+                    onClick={() => setTool("eyedropper")}
+                    label="Pick"
+                    hint="I"
+                    icon={<Pipette className="w-4 h-4" />}
                   />
                 </div>
               </Panel>
@@ -270,20 +351,39 @@ const Index = () => {
                   <span>56</span>
                   <span>64</span>
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setShowGrid((v) => !v)}
+                  className={`mt-4 w-full flex items-center justify-between px-3 py-2 rounded-md border-2 border-brand-ink text-sm font-semibold transition-colors ${
+                    showGrid ? "bg-brand-yellow" : "bg-background hover:bg-brand-soft"
+                  }`}
+                >
+                  <span className="flex items-center gap-2">
+                    <Grid3x3 className="w-4 h-4" /> Grid lines
+                  </span>
+                  <span className="mono text-[10px]">{showGrid ? "ON · G" : "OFF · G"}</span>
+                </button>
               </Panel>
             </aside>
 
             {/* Center: Canvas */}
             <section className="lg:col-span-6 order-1 lg:order-2">
               <div className="bg-card border-2 border-brand-ink rounded-xl p-5 md:p-8 shadow-brutal">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-brand-pink animate-blink" />
                     <span className="mono text-[10px] uppercase tracking-widest text-muted-foreground">
                       Live Canvas
                     </span>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-wrap">
+                    <IconBtn onClick={() => bumpZoom(-1)} label="Zoom out (-)">
+                      <ZoomOut className="w-4 h-4" />
+                    </IconBtn>
+                    <IconBtn onClick={() => bumpZoom(1)} label="Zoom in (+)">
+                      <ZoomIn className="w-4 h-4" />
+                    </IconBtn>
+                    <span className="w-px h-6 bg-border mx-1" />
                     <IconBtn
                       onClick={() => window.dispatchEvent(new Event("pixel:undo"))}
                       label="Undo (⌘Z)"
@@ -311,13 +411,17 @@ const Index = () => {
                   size={size}
                   color={color}
                   tool={tool}
+                  zoom={zoom}
+                  showGrid={showGrid}
                   onColorUsed={trackColor}
+                  onPickColor={onEyedropPicked}
+                  onSizeChange={setSize}
                   registerHandle={(h) => (handleRef.current = h)}
                 />
               </div>
             </section>
 
-            {/* Right: Export & tips */}
+            {/* Right: Export, save, tips */}
             <aside className="lg:col-span-3 space-y-4 order-3">
               <Panel label="04 / Export" accent="pink">
                 <Button
@@ -327,29 +431,46 @@ const Index = () => {
                   <Download className="w-4 h-4 mr-2" />
                   Download PNG
                 </Button>
-                <Button
-                  onClick={handleCopy}
-                  variant="outline"
-                  className="w-full mt-2 h-10 border-2 border-brand-ink hover:bg-brand-cyan hover:text-brand-ink"
-                >
-                  Copy pixel data
-                </Button>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  <Button
+                    onClick={handleSave}
+                    variant="outline"
+                    className="h-10 border-2 border-brand-ink hover:bg-brand-lime hover:text-brand-ink"
+                  >
+                    <Save className="w-4 h-4 mr-1" /> Save
+                  </Button>
+                  <Button
+                    onClick={handleCopy}
+                    variant="outline"
+                    className="h-10 border-2 border-brand-ink hover:bg-brand-cyan hover:text-brand-ink"
+                  >
+                    Copy data
+                  </Button>
+                </div>
                 <p className="mono text-[10px] text-muted-foreground mt-3 leading-relaxed">
                   Output: <span className="text-brand-ink font-bold">{size * 16}×{size * 16}px</span>{" "}
                   PNG with transparent background.
                 </p>
               </Panel>
 
-              <Panel label="05 / Shortcuts">
+              <Panel label="05 / My sketches" accent="cyan">
+                <SketchGallery onLoad={handleLoad} refreshKey={galleryKey} />
+              </Panel>
+
+              <Panel label="06 / Shortcuts">
                 <ul className="space-y-2 text-sm">
                   <Shortcut keys={["C"]} label="Pencil" />
                   <Shortcut keys={["E"]} label="Eraser" />
+                  <Shortcut keys={["F"]} label="Fill" />
+                  <Shortcut keys={["I"]} label="Eyedropper" />
+                  <Shortcut keys={["G"]} label="Toggle grid" />
+                  <Shortcut keys={["+", "−"]} label="Zoom" />
                   <Shortcut keys={["⌘", "Z"]} label="Undo" />
                   <Shortcut keys={["⇧", "⌘", "Z"]} label="Redo" />
                 </ul>
               </Panel>
 
-              <Panel label="06 / Tips" accent="cyan">
+              <Panel label="07 / Tips">
                 <ul className="space-y-3">
                   {TIPS.map((t, i) => (
                     <li key={i} className="flex gap-2 text-sm leading-snug">
@@ -369,7 +490,7 @@ const Index = () => {
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
               <div>
                 <div className="mono text-xs uppercase tracking-widest text-brand-pink mb-2">
-                  / 07 — Inspiration
+                  / 08 — Inspiration
                 </div>
                 <h2 className="font-display text-4xl md:text-6xl text-brand-ink leading-none">
                   Made by the<br />
@@ -405,7 +526,7 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2 mono text-[11px] uppercase tracking-widest opacity-70">
               <Keyboard className="w-3.5 h-3.5" />
-              Press C / E / ⌘Z to fly
+              C / E / F / I / G / ⌘Z
             </div>
             <div className="mono text-[11px] uppercase tracking-widest opacity-70">
               © {new Date().getFullYear()} — One pixel at a time
