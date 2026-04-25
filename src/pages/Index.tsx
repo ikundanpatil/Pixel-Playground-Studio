@@ -458,7 +458,11 @@ const Index = () => {
                 </p>
               </Panel>
 
-              <Panel label="05 / My sketches" accent="cyan">
+              <Panel label="05 / Image → Pixels" accent="cyan">
+                <ImageToPixels size={size} onResult={handleImagePixels} />
+              </Panel>
+
+              <Panel label="06 / My sketches">
                 <SketchGallery onLoad={handleLoad} refreshKey={galleryKey} />
               </Panel>
 
