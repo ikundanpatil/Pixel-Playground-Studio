@@ -33,7 +33,6 @@ import {
   saveSketches,
 } from "@/components/SketchGallery";
 import { ImageToPixels } from "@/components/ImageToPixels";
-import { MusicPlayer } from "@/components/MusicPlayer";
 
 const TIPS = [
   "Start low-res. Magic happens at 16×16.",
@@ -148,77 +147,25 @@ const Index = () => {
 
   return (
     <TooltipProvider delayDuration={150}>
-      <div className="min-h-screen bg-paper text-zine-ink font-geist relative overflow-x-hidden">
-        {/* Texture layer */}
-        <div className="fixed inset-0 noise-overlay pointer-events-none z-50" aria-hidden />
-
-        {/* Sticky Pill Nav */}
-        <nav className="fixed top-4 md:top-6 left-1/2 -translate-x-1/2 z-[60] px-1.5 py-1.5 bg-zine-ink text-paper rounded-full flex items-center gap-2 md:gap-4 shadow-2xl border border-white/10 max-w-[95vw]">
-          <div className="flex items-center gap-3 md:gap-5 px-3 md:px-4">
-            <span className="font-serif-display italic font-bold text-xl tracking-tighter">PX.</span>
-            <div className="hidden sm:block h-4 w-px bg-paper/20" />
-            <a href="#studio" className="hidden sm:inline text-[10px] md:text-xs font-medium uppercase tracking-widest hover:text-white/70 transition-colors">Studio</a>
-            <a href="#grid" className="hidden md:inline text-xs font-medium uppercase tracking-widest hover:text-white/70 transition-colors">Tools</a>
-            <a href="#inspiration" className="text-[10px] md:text-xs font-medium uppercase tracking-widest hover:text-white/70 transition-colors">Archive</a>
-          </div>
-          <div className="hidden md:block">
-            <MusicPlayer />
-          </div>
-          <a
-            href="#studio"
-            className="holo-sticker text-zine-ink px-4 md:px-5 py-2 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-widest border border-white/40 hover:scale-105 transition-transform"
-          >
-            Open App
-          </a>
-        </nav>
-
-        {/* Hero */}
-        <header className="pt-32 md:pt-40 pb-16 px-6 max-w-7xl mx-auto">
-          <div className="flex flex-col items-center text-center space-y-7">
-            <div className="holo-sticker px-4 py-1 rounded-full text-[10px] font-bold uppercase tracking-[0.2em] border border-white/60">
-              V.04 Pixel Assembly Engine
-            </div>
-            <h1 className="font-serif-display text-6xl sm:text-8xl md:text-9xl font-light tracking-tight text-balance leading-[0.9] italic">
-              Modern Craft{" "}
-              <span className="font-geist not-italic font-black block tracking-tighter">Lo-Fi Spirit.</span>
-            </h1>
-            <p className="max-w-[55ch] text-base md:text-xl font-medium leading-relaxed text-zine-ink/80">
-              The rhythmic pixel-art workshop designed for the high-end editorial era.
-              Precise, modular, and unyieldingly raw — ship a PNG in seconds.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3 pt-2">
-              <a
-                href="#studio"
-                className="px-7 md:px-8 py-3.5 md:py-4 bg-zine-ink text-paper text-xs md:text-sm font-bold uppercase tracking-widest hover:translate-x-1 hover:-translate-y-1 transition-transform border border-zine-ink"
-              >
-                Start Assembling
-              </a>
-              <a
-                href="#inspiration"
-                className="px-7 md:px-8 py-3.5 md:py-4 bg-transparent border border-zine-ink text-xs md:text-sm font-bold uppercase tracking-widest hover:bg-zine-ink hover:text-paper transition-all"
-              >
-                View Showreel
-              </a>
-            </div>
-          </div>
-        </header>
-
-        {/* Marquee strip */}
-        <div className="border-y border-zine-ink/10 bg-paper-deep overflow-hidden py-4">
-          <div className="flex whitespace-nowrap animate-marquee-fast">
+      <div className="min-h-screen bg-background text-foreground">
+        {/* Top marquee */}
+        <div className="border-b-2 border-brand-ink bg-brand-ink text-background overflow-hidden">
+          <div className="flex whitespace-nowrap mono text-xs uppercase tracking-[0.2em] py-2 marquee-track">
             {Array.from({ length: 2 }).map((_, k) => (
-              <div key={k} className="flex items-center gap-10 pr-10">
+              <div key={k} className="flex items-center gap-8 pr-8">
                 {[
-                  "Sub-pixel rendering",
-                  "Linear workflow",
-                  "Zero latency",
-                  "Perfect geometry",
-                  "Open source spirit",
-                  "Editorial grid",
+                  "Pixel Art Studio",
+                  "★ Free & in-browser",
+                  "Export PNG",
+                  "8×8 → 64×64",
+                  "Made for makers",
+                  "★ No sign-up",
+                  "Awwwards-ready palette",
+                  "★ Draw, erase, ship",
                 ].map((t, i) => (
-                  <span key={`${k}-${i}`} className="flex items-center gap-10">
-                    <span className="font-serif-display italic text-3xl md:text-5xl font-light tracking-tight">{t}</span>
-                    <span className="font-geist text-3xl md:text-5xl font-light text-zine-ink/30">/</span>
+                  <span key={`${k}-${i}`} className="flex items-center gap-8">
+                    <span>{t}</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-cyan" />
                   </span>
                 ))}
               </div>
@@ -226,112 +173,72 @@ const Index = () => {
           </div>
         </div>
 
-        {/* Bento Feature Grid */}
-        <section id="grid" className="px-6 py-20 md:py-32 max-w-7xl mx-auto">
-          <div className="grid grid-cols-12 gap-0 border-t border-l border-zine-ink">
-            {/* Block 1: Global grid */}
-            <div className="col-span-12 md:col-span-8 p-8 md:p-12 border-r border-b border-zine-ink flex flex-col justify-between min-h-[420px] relative overflow-hidden">
-              <div className="relative z-10 max-w-md">
-                <span className="text-[10px] font-black uppercase tracking-widest mb-4 block">[ 01 ] Global Grid System</span>
-                <h2 className="font-serif-display text-4xl md:text-5xl italic leading-tight">
-                  Infinite scaling, zero friction.
-                </h2>
-              </div>
-              <p className="relative z-10 max-w-xs text-sm font-medium mt-8">
-                Every pixel aligned to a rhythmic 8pt grid. Consistency is not an accident; it's an assembly.
-              </p>
-              <div className="absolute top-0 right-0 w-1/2 h-full bg-zine-ink/5 border-l border-zine-ink hidden md:block">
-                <div className="w-full h-full bg-grid-pattern opacity-60" />
-              </div>
-            </div>
-
-            {/* Block 2: Pro palette */}
-            <div className="col-span-12 md:col-span-4 p-8 md:p-12 border-r border-b border-zine-ink flex flex-col justify-center bg-paper-deep">
-              <div className="holo-sticker size-20 md:size-24 rounded-2xl mb-6 flex items-center justify-center rotate-3 border-2 border-white">
-                <div className="size-12 bg-zine-ink rounded-full flex items-center justify-center text-paper font-serif-display italic text-2xl">P</div>
-              </div>
-              <h3 className="text-xl md:text-2xl font-black tracking-tight mb-3 uppercase">Pro Palette Control</h3>
-              <p className="text-sm leading-relaxed mb-5 text-zine-ink/70">
-                Curated palette of hot pink, cyan, gold and ink for instantly cohesive output.
-              </p>
-              <div className="flex gap-1">
-                <div className="size-7 bg-brand-pink border border-zine-ink" />
-                <div className="size-7 bg-brand-cyan border border-zine-ink" />
-                <div className="size-7 bg-brand-yellow border border-zine-ink" />
-                <div className="size-7 bg-brand-purple border border-zine-ink" />
-                <div className="size-7 bg-zine-ink border border-zine-ink" />
-              </div>
-            </div>
-
-            {/* Block 3: Live preview */}
-            <div className="col-span-12 md:col-span-4 p-8 md:p-10 border-r border-b border-zine-ink space-y-5">
-              <div className="text-6xl md:text-7xl font-serif-display italic border-b border-zine-ink pb-4">60fps</div>
-              <p className="text-[10px] uppercase font-bold tracking-[0.2em]">Live Preview Rendering</p>
-              <p className="text-sm text-zine-ink/70">
-                Watch your assembly come to life with hardware-accelerated rendering and real-time eyedrop sampling.
-              </p>
-            </div>
-
-            {/* Block 4: Mini gallery */}
-            <div className="col-span-12 md:col-span-8 p-0 border-r border-b border-zine-ink">
-              <div className="grid grid-cols-2 md:grid-cols-4 h-full">
-                {[
-                  ["#FF1493", "#FFD700"],
-                  ["#00FFFF", "#8B00FF"],
-                  ["#FFFF00", "#FF1493"],
-                  ["#36454F", "#00FFFF"],
-                ].map(([a, b], i) => (
-                  <div key={i} className="aspect-square border-r last:border-r-0 border-zine-ink overflow-hidden group relative">
-                    <div
-                      className="w-full h-full transition-transform duration-700 group-hover:scale-110"
-                      style={{
-                        background: `repeating-conic-gradient(${a} 0 25%, ${b} 0 50%) 0 0/24px 24px`,
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Stats row */}
-            <div className="col-span-12 p-8 md:p-12 border-r border-b border-zine-ink flex flex-wrap items-center justify-between gap-8 bg-zine-ink text-paper">
-              <div className="space-y-1">
-                <div className="text-3xl md:text-4xl font-serif-display italic">12.4k</div>
-                <div className="text-[10px] uppercase tracking-widest opacity-60">Active Workshops</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-3xl md:text-4xl font-serif-display italic">1.2m</div>
-                <div className="text-[10px] uppercase tracking-widest opacity-60">Pixels Rendered</div>
-              </div>
-              <div className="space-y-1">
-                <div className="text-3xl md:text-4xl font-serif-display italic">99.9%</div>
-                <div className="text-[10px] uppercase tracking-widest opacity-60">Uptime Accuracy</div>
+        {/* Header / Hero */}
+        <header className="border-b-2 border-brand-ink bg-brand-soft relative overflow-hidden">
+          <div className="absolute inset-0 bg-dots opacity-60" aria-hidden />
+          <div className="container relative py-10 md:py-16">
+            <div className="flex items-center justify-between gap-6 mb-10">
+              <div className="flex items-center gap-3">
+                <div className="grid grid-cols-3 gap-0.5 p-1.5 rounded-md bg-brand-ink">
+                  <span className="w-2 h-2 bg-brand-pink" />
+                  <span className="w-2 h-2 bg-brand-cyan" />
+                  <span className="w-2 h-2 bg-brand-yellow" />
+                  <span className="w-2 h-2 bg-brand-cyan" />
+                  <span className="w-2 h-2 bg-brand-pink" />
+                  <span className="w-2 h-2 bg-brand-gold" />
+                  <span className="w-2 h-2 bg-brand-yellow" />
+                  <span className="w-2 h-2 bg-brand-purple" />
+                  <span className="w-2 h-2 bg-brand-pink" />
+                </div>
+                <span className="mono text-xs uppercase tracking-widest text-brand-ink">
+                  Pixel/Studio · v1.1
+                </span>
               </div>
               <a
-                href="#studio"
-                className="px-6 md:px-8 py-3 holo-sticker text-zine-ink rounded-full text-[10px] md:text-xs font-black uppercase tracking-[0.2em]"
+                href="#inspiration"
+                className="hidden md:inline-flex items-center gap-2 mono text-xs uppercase tracking-widest text-brand-ink hover:text-brand-pink transition-colors"
               >
-                Join the collective
+                Browse gallery <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
-          </div>
-        </section>
 
-        {/* Studio (kept functional, restyled wrapper) */}
-        <main id="studio" className="px-6 pb-20 md:pb-32 max-w-7xl mx-auto">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-widest mb-3 block">[ 02 ] The Workbench</span>
-              <h2 className="font-serif-display text-5xl md:text-7xl italic leading-[0.9] max-w-2xl">
-                Assemble pixel by pixel.
-              </h2>
+            <div className="grid md:grid-cols-12 gap-8 items-end">
+              <div className="md:col-span-8">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-cyan border-2 border-brand-ink mono text-[11px] uppercase tracking-widest mb-6">
+                  <Sparkles className="w-3 h-3" /> Now with fill, eyedrop & zoom
+                </div>
+                <h1 className="font-display text-5xl sm:text-7xl md:text-[8rem] leading-[0.85] text-brand-ink text-balance">
+                  PIXEL
+                  <br />
+                  <span className="relative inline-block">
+                    <span className="text-brand-pink">STUDIO</span>
+                    <span className="absolute -bottom-2 left-0 right-0 h-2 bg-brand-yellow -z-0" />
+                  </span>
+                  .
+                </h1>
+                <p className="mt-6 max-w-xl text-base md:text-lg text-muted-foreground">
+                  A loud, opinionated pixel art editor for the browser. Snap a grid,
+                  pick a color, ship a PNG. No accounts, no plug-ins — just{" "}
+                  <span className="font-semibold text-brand-ink">vibes per pixel</span>.
+                </p>
+              </div>
+              <div className="md:col-span-4 flex md:justify-end">
+                <div className="flex flex-wrap gap-2">
+                  {["#FF1493", "#00FFFF", "#FFFF00", "#FFD700", "#8B00FF"].map((c, i) => (
+                    <span
+                      key={c}
+                      className="w-12 h-12 md:w-14 md:h-14 border-2 border-brand-ink rounded-md shadow-brutal-sm"
+                      style={{ backgroundColor: c, transform: `rotate(${(i - 2) * 4}deg)` }}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-            <p className="max-w-sm text-sm md:text-base text-zine-ink/70">
-              A loud, opinionated editor. Pick a tool, pick a color, ship a PNG. No accounts, no plug-ins —
-              just <span className="font-semibold text-zine-ink">vibes per pixel</span>.
-            </p>
           </div>
+        </header>
 
+        {/* Studio */}
+        <main className="container py-10 md:py-16">
           <div className="grid lg:grid-cols-12 gap-6">
             {/* Left: Tools */}
             <aside className="lg:col-span-3 space-y-4 order-2 lg:order-1">
@@ -370,7 +277,7 @@ const Index = () => {
 
               <Panel label="02 / Color">
                 <div className="flex items-center gap-3 mb-3">
-                  <label className="relative w-14 h-14 rounded-md border-2 border-zine-ink overflow-hidden cursor-pointer shadow-brutal-sm">
+                  <label className="relative w-14 h-14 rounded-md border-2 border-brand-ink overflow-hidden cursor-pointer shadow-brutal-sm">
                     <input
                       type="color"
                       value={color}
@@ -388,7 +295,7 @@ const Index = () => {
                     <div className="mono text-[10px] uppercase tracking-widest text-muted-foreground">
                       Active
                     </div>
-                    <div className="font-serif-display italic text-xl leading-none mt-1">
+                    <div className="font-display text-lg leading-none mt-1">
                       {color.toUpperCase()}
                     </div>
                     <div className="mono text-[10px] mt-1 text-muted-foreground">
@@ -410,7 +317,7 @@ const Index = () => {
                             setColor(c);
                             setTool("pencil");
                           }}
-                          className="w-6 h-6 rounded border-2 border-zine-ink hover:scale-110 transition-transform"
+                          className="w-6 h-6 rounded border-2 border-brand-ink hover:scale-110 transition-transform"
                           style={{ backgroundColor: c }}
                           aria-label={`Use ${c}`}
                         />
@@ -422,8 +329,10 @@ const Index = () => {
 
               <Panel label="03 / Grid">
                 <div className="flex items-baseline justify-between mb-3">
-                  <span className="font-serif-display italic text-3xl">
-                    {size}<span className="text-brand-pink not-italic">×</span>{size}
+                  <span className="font-display text-3xl">
+                    {size}
+                    <span className="text-brand-pink">×</span>
+                    {size}
                   </span>
                   <span className="mono text-[10px] uppercase text-muted-foreground">
                     {size * size} cells
@@ -438,14 +347,20 @@ const Index = () => {
                   aria-label="Grid size"
                 />
                 <div className="flex justify-between mono text-[10px] text-muted-foreground mt-2">
-                  <span>8</span><span>16</span><span>24</span><span>32</span>
-                  <span>40</span><span>48</span><span>56</span><span>64</span>
+                  <span>8</span>
+                  <span>16</span>
+                  <span>24</span>
+                  <span>32</span>
+                  <span>40</span>
+                  <span>48</span>
+                  <span>56</span>
+                  <span>64</span>
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowGrid((v) => !v)}
-                  className={`mt-4 w-full flex items-center justify-between px-3 py-2 rounded-md border-2 border-zine-ink text-sm font-semibold transition-colors ${
-                    showGrid ? "holo-sticker" : "bg-paper hover:bg-paper-deep"
+                  className={`mt-4 w-full flex items-center justify-between px-3 py-2 rounded-md border-2 border-brand-ink text-sm font-semibold transition-colors ${
+                    showGrid ? "bg-brand-yellow" : "bg-background hover:bg-brand-soft"
                   }`}
                 >
                   <span className="flex items-center gap-2">
@@ -458,7 +373,7 @@ const Index = () => {
 
             {/* Center: Canvas */}
             <section className="lg:col-span-6 order-1 lg:order-2">
-              <div className="bg-card border-2 border-zine-ink rounded-xl p-5 md:p-8 shadow-brutal">
+              <div className="bg-card border-2 border-brand-ink rounded-xl p-5 md:p-8 shadow-brutal">
                 <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-brand-pink animate-blink" />
@@ -511,12 +426,12 @@ const Index = () => {
               </div>
             </section>
 
-            {/* Right */}
+            {/* Right: Export, save, tips */}
             <aside className="lg:col-span-3 space-y-4 order-3">
               <Panel label="04 / Export" accent="pink">
                 <Button
                   onClick={handleDownload}
-                  className="w-full h-12 bg-zine-ink hover:bg-zine-ink/90 text-paper font-bold uppercase tracking-widest text-sm border-2 border-zine-ink shadow-brutal-sm hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all"
+                  className="w-full h-12 bg-brand-pink hover:bg-brand-pink/90 text-white font-display text-base border-2 border-brand-ink shadow-brutal-sm hover:shadow-none hover:translate-x-[3px] hover:translate-y-[3px] transition-all"
                 >
                   <Download className="w-4 h-4 mr-2" />
                   Download PNG
@@ -525,20 +440,20 @@ const Index = () => {
                   <Button
                     onClick={handleSave}
                     variant="outline"
-                    className="h-10 border-2 border-zine-ink hover:bg-brand-lime hover:text-zine-ink"
+                    className="h-10 border-2 border-brand-ink hover:bg-brand-lime hover:text-brand-ink"
                   >
                     <Save className="w-4 h-4 mr-1" /> Save
                   </Button>
                   <Button
                     onClick={handleCopy}
                     variant="outline"
-                    className="h-10 border-2 border-zine-ink hover:bg-brand-cyan hover:text-zine-ink"
+                    className="h-10 border-2 border-brand-ink hover:bg-brand-cyan hover:text-brand-ink"
                   >
                     Copy data
                   </Button>
                 </div>
                 <p className="mono text-[10px] text-muted-foreground mt-3 leading-relaxed">
-                  Output: <span className="text-zine-ink font-bold">{size * 16}×{size * 16}px</span>{" "}
+                  Output: <span className="text-brand-ink font-bold">{size * 16}×{size * 16}px</span>{" "}
                   PNG with transparent background.
                 </p>
               </Panel>
@@ -579,21 +494,23 @@ const Index = () => {
         </main>
 
         {/* Inspiration */}
-        <section id="inspiration" className="border-t border-zine-ink bg-paper-deep">
-          <div className="max-w-7xl mx-auto px-6 py-20 md:py-28">
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <section id="inspiration" className="border-t-2 border-brand-ink bg-brand-soft">
+          <div className="container py-16">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
               <div>
-                <span className="text-[10px] font-black uppercase tracking-widest mb-3 block">[ 03 ] Archive</span>
-                <h2 className="font-serif-display text-5xl md:text-7xl italic leading-[0.9]">
+                <div className="mono text-xs uppercase tracking-widest text-brand-pink mb-2">
+                  / 09 — Inspiration
+                </div>
+                <h2 className="font-display text-4xl md:text-6xl text-brand-ink leading-none">
                   Made by the<br />
-                  <span className="not-italic font-geist font-black tracking-tighter">community.</span>
+                  <span className="text-brand-purple">community.</span>
                 </h2>
               </div>
               <a
                 href="https://www.awwwards.com/awwwards/colors/"
                 target="_blank"
                 rel="noreferrer noopener"
-                className="inline-flex items-center gap-2 mono text-xs uppercase tracking-widest text-zine-ink hover:text-brand-pink transition-colors"
+                className="inline-flex items-center gap-2 mono text-xs uppercase tracking-widest text-brand-ink hover:text-brand-pink transition-colors"
               >
                 <Eye className="w-4 h-4" />
                 Awwwards color references
@@ -605,54 +522,23 @@ const Index = () => {
         </section>
 
         {/* Footer */}
-        <footer className="px-6 py-20 md:py-24 bg-paper border-t border-zine-ink">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-start gap-12">
-              <div className="max-w-xs space-y-5">
-                <div className="font-serif-display italic font-bold tracking-tighter text-3xl md:text-4xl">PXL.STUDIO</div>
-                <p className="text-sm font-medium leading-relaxed text-zine-ink/70">
-                  A rhythmic assembly environment for the modern creator. Built for precision, defined by spirit.
-                </p>
+        <footer className="border-t-2 border-brand-ink bg-brand-ink text-background">
+          <div className="container py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="grid grid-cols-2 gap-0.5">
+                <span className="w-2 h-2 bg-brand-pink" />
+                <span className="w-2 h-2 bg-brand-cyan" />
+                <span className="w-2 h-2 bg-brand-yellow" />
+                <span className="w-2 h-2 bg-brand-purple" />
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-10">
-                <div className="space-y-3">
-                  <h4 className="text-[10px] uppercase font-black tracking-widest">Assembly</h4>
-                  <ul className="text-sm space-y-2 font-medium text-zine-ink/60">
-                    <li className="hover:text-zine-ink cursor-pointer">Grid Engine</li>
-                    <li className="hover:text-zine-ink cursor-pointer">Palette Tool</li>
-                    <li className="hover:text-zine-ink cursor-pointer">Export Lab</li>
-                  </ul>
-                </div>
-                <div className="space-y-3">
-                  <h4 className="text-[10px] uppercase font-black tracking-widest">Workshop</h4>
-                  <ul className="text-sm space-y-2 font-medium text-zine-ink/60">
-                    <li className="hover:text-zine-ink cursor-pointer">Journal</li>
-                    <li className="hover:text-zine-ink cursor-pointer">Archive</li>
-                    <li className="hover:text-zine-ink cursor-pointer">Community</li>
-                  </ul>
-                </div>
-                <div className="space-y-3">
-                  <h4 className="text-[10px] uppercase font-black tracking-widest">Legal</h4>
-                  <ul className="text-sm space-y-2 font-medium text-zine-ink/60">
-                    <li className="hover:text-zine-ink cursor-pointer">Terms</li>
-                    <li className="hover:text-zine-ink cursor-pointer">Privacy</li>
-                  </ul>
-                </div>
-              </div>
+              <span className="font-display text-lg">PIXEL/STUDIO</span>
             </div>
-            <div className="mt-16 pt-10 border-t border-zine-ink/10 flex flex-col md:flex-row justify-between items-center gap-6">
-              <div className="text-[10px] font-bold uppercase tracking-widest text-zine-ink/40">
-                © {new Date().getFullYear()} PXL WORKSHOP — One pixel at a time
-              </div>
-              <div className="flex items-center gap-2 mono text-[10px] uppercase tracking-widest text-zine-ink/50">
-                <Keyboard className="w-3.5 h-3.5" />
-                C / E / F / I / G / ⌘Z
-              </div>
-              <div className="flex gap-3">
-                <div className="size-4 rounded-full holo-sticker" />
-                <div className="size-4 rounded-full bg-zine-ink" />
-                <div className="size-4 rounded-full bg-zine-ink/20" />
-              </div>
+            <div className="flex items-center gap-2 mono text-[11px] uppercase tracking-widest opacity-70">
+              <Keyboard className="w-3.5 h-3.5" />
+              C / E / F / I / G / ⌘Z
+            </div>
+            <div className="mono text-[11px] uppercase tracking-widest opacity-70">
+              © {new Date().getFullYear()} — One pixel at a time
             </div>
           </div>
         </footer>
@@ -673,7 +559,7 @@ const Panel = ({
   accent?: "pink" | "cyan";
 }) => (
   <div
-    className={`bg-card border-2 border-zine-ink rounded-xl p-4 shadow-brutal-sm relative ${
+    className={`bg-card border-2 border-brand-ink rounded-xl p-4 shadow-brutal-sm relative ${
       accent === "pink" ? "before:absolute before:-top-1.5 before:left-4 before:right-4 before:h-1.5 before:bg-brand-pink before:rounded-t" : ""
     } ${
       accent === "cyan" ? "before:absolute before:-top-1.5 before:left-4 before:right-4 before:h-1.5 before:bg-brand-cyan before:rounded-t" : ""
@@ -702,7 +588,7 @@ const ToolButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`group relative h-16 rounded-md border-2 border-zine-ink flex flex-col items-center justify-center gap-1 transition-all ${
+    className={`group relative h-16 rounded-md border-2 border-brand-ink flex flex-col items-center justify-center gap-1 transition-all ${
       active
         ? "bg-brand-yellow shadow-brutal-sm -translate-y-0.5"
         : "bg-background hover:bg-brand-soft"
@@ -728,7 +614,7 @@ const IconBtn = ({
       <button
         type="button"
         onClick={onClick}
-        className="w-9 h-9 rounded-md border-2 border-zine-ink bg-background hover:bg-brand-cyan transition-colors flex items-center justify-center"
+        className="w-9 h-9 rounded-md border-2 border-brand-ink bg-background hover:bg-brand-cyan transition-colors flex items-center justify-center"
         aria-label={label}
       >
         {children}
@@ -745,7 +631,7 @@ const Shortcut = ({ keys, label }: { keys: string[]; label: string }) => (
       {keys.map((k) => (
         <kbd
           key={k}
-          className="mono text-[10px] px-1.5 py-0.5 rounded border-2 border-zine-ink bg-brand-soft min-w-[20px] text-center"
+          className="mono text-[10px] px-1.5 py-0.5 rounded border-2 border-brand-ink bg-brand-soft min-w-[20px] text-center"
         >
           {k}
         </kbd>

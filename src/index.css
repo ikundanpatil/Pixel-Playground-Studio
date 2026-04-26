@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=Geist:wght@300;400;500;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Archivo+Black&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -53,14 +53,6 @@
     --gray: 0 0% 50%;              /* #808080 */
     --soft: 0 0% 96%;              /* #F5F5F5 */
     --grid-line: 0 0% 88%;         /* #E0E0E0 */
-
-    /* Zine / editorial tokens */
-    --paper: 48 14% 91%;           /* #EAE9E4 warm off-white */
-    --paper-deep: 48 10% 86%;      /* slightly darker paper */
-    --zine-ink: 60 5% 7%;          /* #121211 */
-    --holo-1: 220 100% 92%;
-    --holo-2: 290 100% 92%;
-    --holo-3: 140 100% 92%;
 
     /* Effects */
     --shadow-brutal: 6px 6px 0 0 hsl(var(--ink));
@@ -119,31 +111,6 @@
   .shadow-brutal { box-shadow: var(--shadow-brutal); }
   .shadow-brutal-sm { box-shadow: var(--shadow-brutal-sm); }
 
-  .font-serif-display {
-    font-family: 'Fraunces', 'Times New Roman', serif;
-    font-optical-sizing: auto;
-    letter-spacing: -0.02em;
-  }
-  .font-geist {
-    font-family: 'Geist', 'Space Grotesk', system-ui, sans-serif;
-  }
-
-  .bg-paper { background-color: hsl(var(--paper)); }
-  .bg-paper-deep { background-color: hsl(var(--paper-deep)); }
-  .text-zine-ink { color: hsl(var(--zine-ink)); }
-  .bg-zine-ink { background-color: hsl(var(--zine-ink)); }
-  .border-zine-ink { border-color: hsl(var(--zine-ink)); }
-
-  .holo-sticker {
-    background: linear-gradient(135deg, hsl(var(--holo-1)), hsl(var(--holo-2)) 50%, hsl(var(--holo-3)));
-    box-shadow: inset 0 1px 1px hsl(0 0% 100% / 0.8), 0 2px 4px hsl(0 0% 0% / 0.06);
-  }
-
-  .noise-overlay {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.05;
-  }
-
   .bg-grid-pattern {
     background-image:
       linear-gradient(hsl(var(--grid-line)) 1px, transparent 1px),
@@ -158,10 +125,6 @@
 
   .marquee-track {
     animation: marquee 30s linear infinite;
-  }
-
-  .animate-marquee-fast {
-    animation: marquee 18s linear infinite;
   }
 }
 
