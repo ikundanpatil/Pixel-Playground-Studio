@@ -33,6 +33,7 @@ import {
   saveSketches,
 } from "@/components/SketchGallery";
 import { ImageToPixels } from "@/components/ImageToPixels";
+import { MusicPlayer } from "@/components/MusicPlayer";
 
 const TIPS = [
   "Start low-res. Magic happens at 16×16.",
@@ -194,12 +195,15 @@ const Index = () => {
                   Pixel/Studio · v1.1
                 </span>
               </div>
-              <a
-                href="#inspiration"
-                className="hidden md:inline-flex items-center gap-2 mono text-xs uppercase tracking-widest text-brand-ink hover:text-brand-pink transition-colors"
-              >
-                Browse gallery <ExternalLink className="w-3.5 h-3.5" />
-              </a>
+              <div className="flex items-center gap-3">
+                <MusicPlayer />
+                <a
+                  href="#inspiration"
+                  className="hidden md:inline-flex items-center gap-2 mono text-xs uppercase tracking-widest text-brand-ink hover:text-brand-pink transition-colors"
+                >
+                  Browse gallery <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              </div>
             </div>
 
             <div className="grid md:grid-cols-12 gap-8 items-end">
