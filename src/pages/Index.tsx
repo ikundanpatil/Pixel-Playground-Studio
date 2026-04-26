@@ -673,7 +673,7 @@ const Panel = ({
   accent?: "pink" | "cyan";
 }) => (
   <div
-    className={`bg-card border-2 border-brand-ink rounded-xl p-4 shadow-brutal-sm relative ${
+    className={`bg-card border-2 border-zine-ink rounded-xl p-4 shadow-brutal-sm relative ${
       accent === "pink" ? "before:absolute before:-top-1.5 before:left-4 before:right-4 before:h-1.5 before:bg-brand-pink before:rounded-t" : ""
     } ${
       accent === "cyan" ? "before:absolute before:-top-1.5 before:left-4 before:right-4 before:h-1.5 before:bg-brand-cyan before:rounded-t" : ""
