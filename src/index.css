@@ -54,6 +54,14 @@
     --soft: 0 0% 96%;              /* #F5F5F5 */
     --grid-line: 0 0% 88%;         /* #E0E0E0 */
 
+    /* Zine / editorial tokens */
+    --paper: 48 14% 91%;           /* #EAE9E4 warm off-white */
+    --paper-deep: 48 10% 86%;      /* slightly darker paper */
+    --zine-ink: 60 5% 7%;          /* #121211 */
+    --holo-1: 220 100% 92%;
+    --holo-2: 290 100% 92%;
+    --holo-3: 140 100% 92%;
+
     /* Effects */
     --shadow-brutal: 6px 6px 0 0 hsl(var(--ink));
     --shadow-brutal-sm: 3px 3px 0 0 hsl(var(--ink));
