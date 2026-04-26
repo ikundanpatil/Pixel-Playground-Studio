@@ -702,7 +702,7 @@ const ToolButton = ({
   <button
     type="button"
     onClick={onClick}
-    className={`group relative h-16 rounded-md border-2 border-brand-ink flex flex-col items-center justify-center gap-1 transition-all ${
+    className={`group relative h-16 rounded-md border-2 border-zine-ink flex flex-col items-center justify-center gap-1 transition-all ${
       active
         ? "bg-brand-yellow shadow-brutal-sm -translate-y-0.5"
         : "bg-background hover:bg-brand-soft"
@@ -728,7 +728,7 @@ const IconBtn = ({
       <button
         type="button"
         onClick={onClick}
-        className="w-9 h-9 rounded-md border-2 border-brand-ink bg-background hover:bg-brand-cyan transition-colors flex items-center justify-center"
+        className="w-9 h-9 rounded-md border-2 border-zine-ink bg-background hover:bg-brand-cyan transition-colors flex items-center justify-center"
         aria-label={label}
       >
         {children}
@@ -745,7 +745,7 @@ const Shortcut = ({ keys, label }: { keys: string[]; label: string }) => (
       {keys.map((k) => (
         <kbd
           key={k}
-          className="mono text-[10px] px-1.5 py-0.5 rounded border-2 border-brand-ink bg-brand-soft min-w-[20px] text-center"
+          className="mono text-[10px] px-1.5 py-0.5 rounded border-2 border-zine-ink bg-brand-soft min-w-[20px] text-center"
         >
           {k}
         </kbd>
