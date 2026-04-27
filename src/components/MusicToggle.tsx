@@ -2,86 +2,65 @@ import { useEffect, useRef, useState } from "react";
 import { Music, Pause } from "lucide-react";
 
 /**
- * Floating music toggle. Generates a looping chiptune-style melody with the
- * Web Audio API so no external audio assets are needed.
+ * 🎵 Drop your own track here.
+ * Must be a direct MP3/WAV/OGG URL with CORS enabled.
+ * Example: "https://cdn.example.com/track.mp3"
  */
+const MUSIC_URL = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_1bfc999058.mp3?filename=lofi-study-112191.mp3";
+
 export const MusicToggle = () => {
   const [playing, setPlaying] = useState(false);
-  const [volume, setVolume] = useState(0.35);
+  const [volume, setVolume] = useState(0.4);
   const [expanded, setExpanded] = useState(false);
-  const ctxRef = useRef<AudioContext | null>(null);
-  const masterRef = useRef<GainNode | null>(null);
-  const timerRef = useRef<number | null>(null);
+  const [ready, setReady] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Simple pentatonic loop (frequencies in Hz)
-  const NOTES = [
-    523.25, 659.25, 783.99, 880.0, 783.99, 659.25, 523.25, 440.0,
-    523.25, 659.25, 587.33, 523.25, 440.0, 523.25, 392.0, 440.0,
-  ];
-  const STEP_MS = 220;
+  // Initialize audio element once
+  useEffect(() => {
+    const audio = new Audio(MUSIC_URL);
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.crossOrigin = "anonymous";
+    audio.volume = volume;
+    audio.addEventListener("canplay", () => setReady(true));
+    audio.addEventListener("ended", () => setPlaying(false));
+    audioRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = "";
+      audioRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const playStep = (freq: number, t0: number) => {
-    const ctx = ctxRef.current!;
-    const master = masterRef.current!;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = "square";
-    osc.frequency.setValueAtTime(freq, t0);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(0.18, t0 + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.18);
-    osc.connect(gain).connect(master);
-    osc.start(t0);
-    osc.stop(t0 + 0.2);
-  };
+  // Update volume live
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
 
   const start = async () => {
-    if (!ctxRef.current) {
-      const Ctx =
-        window.AudioContext ||
-        (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      ctxRef.current = new Ctx();
-      const master = ctxRef.current.createGain();
-      master.gain.value = volume;
-      master.connect(ctxRef.current.destination);
-      masterRef.current = master;
+    const audio = audioRef.current;
+    if (!audio) return;
+    try {
+      await audio.play();
+      setPlaying(true);
+    } catch {
+      // Autoplay blocked — user will need to click again
+      setPlaying(false);
     }
-    await ctxRef.current.resume();
-    let i = 0;
-    const tick = () => {
-      const ctx = ctxRef.current;
-      if (!ctx) return;
-      playStep(NOTES[i % NOTES.length], ctx.currentTime);
-      if (i % 4 === 0) playStep(NOTES[i % NOTES.length] / 2, ctx.currentTime);
-      i++;
-    };
-    tick();
-    timerRef.current = window.setInterval(tick, STEP_MS);
   };
 
   const stop = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    ctxRef.current?.suspend();
+    audioRef.current?.pause();
+    setPlaying(false);
   };
 
   const toggle = () => {
     if (playing) stop();
     else start();
-    setPlaying((v) => !v);
   };
 
-  // Update master volume live
-  useEffect(() => {
-    if (masterRef.current && ctxRef.current) {
-      masterRef.current.gain.setTargetAtTime(volume, ctxRef.current.currentTime, 0.05);
-    }
-  }, [volume]);
-
-  // Auto-start music on the first user interaction (browsers block silent autoplay).
-  // The user can mute/dismiss it any time via the toggle, and we remember that choice.
+  // Auto-start on first user interaction (browsers block silent autoplay)
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (localStorage.getItem("pixel:music") === "off") return;
@@ -91,7 +70,6 @@ export const MusicToggle = () => {
       if (started) return;
       started = true;
       await start();
-      setPlaying(true);
     };
     const events = ["pointerdown", "keydown", "touchstart"] as const;
     events.forEach((e) => window.addEventListener(e, kickoff, { once: true, passive: true }));
@@ -101,18 +79,11 @@ export const MusicToggle = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Persist user preference whenever they toggle.
+  // Persist choice
   useEffect(() => {
     if (typeof window === "undefined") return;
     localStorage.setItem("pixel:music", playing ? "on" : "off");
   }, [playing]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      ctxRef.current?.close();
-    };
-  }, []);
 
   return (
     <div
@@ -148,13 +119,13 @@ export const MusicToggle = () => {
       <button
         type="button"
         onClick={toggle}
+        disabled={!ready}
         aria-label={playing ? "Pause music" : "Play music"}
         aria-pressed={playing}
-        className={`group relative w-16 h-16 rounded-full border-2 border-brand-ink shadow-brutal flex items-center justify-center transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-brutal-sm active:translate-x-[3px] active:translate-y-[3px] active:shadow-none ${
+        className={`group relative w-16 h-16 rounded-full border-2 border-brand-ink shadow-brutal flex items-center justify-center transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-brutal-sm active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-60 disabled:cursor-wait ${
           playing ? "bg-brand-pink text-white" : "bg-brand-yellow text-brand-ink"
         }`}
       >
-        {/* Pulsing ring when playing */}
         {playing && (
           <span
             className="absolute inset-0 rounded-full border-2 border-brand-pink animate-ping opacity-60"
@@ -162,7 +133,6 @@ export const MusicToggle = () => {
           />
         )}
 
-        {/* Icon OR equalizer bars */}
         {playing ? (
           <div className="flex items-end gap-0.5 h-5" aria-hidden>
             <span className="w-1 bg-white rounded-sm eq-bar" style={{ animationDelay: "0ms" }} />
@@ -174,14 +144,12 @@ export const MusicToggle = () => {
           <Music className="w-6 h-6 transition-transform group-hover:rotate-12" />
         )}
 
-        {/* Hover-only pause hint when playing */}
         {playing && (
           <span className="absolute inset-0 rounded-full bg-brand-ink/0 hover:bg-brand-ink/30 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
             <Pause className="w-5 h-5 text-white" />
           </span>
         )}
 
-        {/* Status label */}
         <span
           className={`absolute -top-2 -left-2 mono text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded border-2 border-brand-ink ${
             playing ? "bg-brand-lime text-brand-ink" : "bg-background text-muted-foreground"
