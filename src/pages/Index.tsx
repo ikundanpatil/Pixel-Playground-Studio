@@ -33,6 +33,7 @@ import {
   saveSketches,
 } from "@/components/SketchGallery";
 import { ImageToPixels } from "@/components/ImageToPixels";
+import { MusicToggle } from "@/components/MusicToggle";
 
 const TIPS = [
   "Start low-res. Magic happens at 16×16.",
@@ -542,6 +543,8 @@ const Index = () => {
             </div>
           </div>
         </footer>
+
+        <MusicToggle />
       </div>
     </TooltipProvider>
   );
