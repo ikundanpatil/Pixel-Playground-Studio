@@ -20,7 +20,6 @@ export const MusicToggle = () => {
     const audio = new Audio(MUSIC_URL);
     audio.loop = true;
     audio.preload = "auto";
-    audio.crossOrigin = "anonymous";
     audio.volume = volume;
     audio.addEventListener("canplay", () => setReady(true));
     audio.addEventListener("ended", () => setPlaying(false));
