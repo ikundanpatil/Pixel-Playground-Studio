@@ -44,15 +44,18 @@ export const MusicToggle = () => {
     try {
       await audio.play();
       setPlaying(true);
+      setNeedsInteraction(false);
     } catch {
-      // Autoplay blocked — user will need to click again
+      // Autoplay blocked — show hint, wait for user gesture
       setPlaying(false);
+      setNeedsInteraction(true);
     }
   };
 
   const stop = () => {
     audioRef.current?.pause();
     setPlaying(false);
+    setNeedsInteraction(false);
   };
 
   const toggle = () => {
@@ -60,14 +63,28 @@ export const MusicToggle = () => {
     else start();
   };
 
-  // Auto-start on first user interaction (browsers block silent autoplay)
+  // Try to auto-start immediately, then fall back to first interaction
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (localStorage.getItem("pixel:music") === "off") return;
 
+    // Attempt silent autoplay (works if site has media engagement / user pref)
+    const tryAutoplay = async () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      try {
+        await audio.play();
+        setPlaying(true);
+      } catch {
+        setNeedsInteraction(true);
+      }
+    };
+
+    if (ready) tryAutoplay();
+
     let started = false;
     const kickoff = async () => {
-      if (started) return;
+      if (started || playing) return;
       started = true;
       await start();
     };
@@ -77,7 +94,7 @@ export const MusicToggle = () => {
       events.forEach((e) => window.removeEventListener(e, kickoff));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ready]);
 
   // Persist choice
   useEffect(() => {
