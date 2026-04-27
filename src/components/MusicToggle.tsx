@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Music, Pause } from "lucide-react";
+import musicTrack from "@/assets/sunflower.mp3";
 
 /**
- * 🎵 Drop your own track here.
- * Must be a direct MP3/WAV/OGG URL with CORS enabled.
- * Example: "https://cdn.example.com/track.mp3"
+ * 🎵 Background music — bundled track.
+ * Swap the import above to change the song.
  */
-const MUSIC_URL = "https://cdn.pixabay.com/download/audio/2022/03/15/audio_1bfc999058.mp3?filename=lofi-study-112191.mp3";
+const MUSIC_URL = musicTrack;
 
 export const MusicToggle = () => {
   const [playing, setPlaying] = useState(false);
