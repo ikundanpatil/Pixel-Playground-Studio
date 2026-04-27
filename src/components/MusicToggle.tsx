@@ -80,6 +80,33 @@ export const MusicToggle = () => {
     }
   }, [volume]);
 
+  // Auto-start music on the first user interaction (browsers block silent autoplay).
+  // The user can mute/dismiss it any time via the toggle, and we remember that choice.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (localStorage.getItem("pixel:music") === "off") return;
+
+    let started = false;
+    const kickoff = async () => {
+      if (started) return;
+      started = true;
+      await start();
+      setPlaying(true);
+    };
+    const events = ["pointerdown", "keydown", "touchstart"] as const;
+    events.forEach((e) => window.addEventListener(e, kickoff, { once: true, passive: true }));
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, kickoff));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist user preference whenever they toggle.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    localStorage.setItem("pixel:music", playing ? "on" : "off");
+  }, [playing]);
+
   useEffect(() => {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
