@@ -132,6 +132,13 @@ export const MusicToggle = () => {
         </span>
       </div>
 
+      {/* "Tap anywhere" hint when autoplay was blocked */}
+      {needsInteraction && !playing && (
+        <div className="absolute -top-12 right-0 bg-brand-ink text-background mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full border-2 border-brand-pink shadow-brutal-sm whitespace-nowrap animate-pulse pointer-events-none">
+          ♪ Tap anywhere to start
+        </div>
+      )}
+
       {/* Main toggle */}
       <button
         type="button"
