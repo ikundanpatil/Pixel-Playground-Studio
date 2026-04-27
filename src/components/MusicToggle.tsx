@@ -13,6 +13,7 @@ export const MusicToggle = () => {
   const [volume, setVolume] = useState(0.4);
   const [expanded, setExpanded] = useState(false);
   const [ready, setReady] = useState(false);
+  const [needsInteraction, setNeedsInteraction] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize audio element once
