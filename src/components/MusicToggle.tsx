@@ -13,6 +13,7 @@ export const MusicToggle = () => {
   const [volume, setVolume] = useState(0.4);
   const [expanded, setExpanded] = useState(false);
   const [ready, setReady] = useState(false);
+  const [needsInteraction, setNeedsInteraction] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Initialize audio element once
@@ -43,15 +44,18 @@ export const MusicToggle = () => {
     try {
       await audio.play();
       setPlaying(true);
+      setNeedsInteraction(false);
     } catch {
-      // Autoplay blocked — user will need to click again
+      // Autoplay blocked — show hint, wait for user gesture
       setPlaying(false);
+      setNeedsInteraction(true);
     }
   };
 
   const stop = () => {
     audioRef.current?.pause();
     setPlaying(false);
+    setNeedsInteraction(false);
   };
 
   const toggle = () => {
@@ -59,14 +63,28 @@ export const MusicToggle = () => {
     else start();
   };
 
-  // Auto-start on first user interaction (browsers block silent autoplay)
+  // Try to auto-start immediately, then fall back to first interaction
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (localStorage.getItem("pixel:music") === "off") return;
 
+    // Attempt silent autoplay (works if site has media engagement / user pref)
+    const tryAutoplay = async () => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      try {
+        await audio.play();
+        setPlaying(true);
+      } catch {
+        setNeedsInteraction(true);
+      }
+    };
+
+    if (ready) tryAutoplay();
+
     let started = false;
     const kickoff = async () => {
-      if (started) return;
+      if (started || playing) return;
       started = true;
       await start();
     };
@@ -76,7 +94,7 @@ export const MusicToggle = () => {
       events.forEach((e) => window.removeEventListener(e, kickoff));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [ready]);
 
   // Persist choice
   useEffect(() => {
@@ -113,6 +131,13 @@ export const MusicToggle = () => {
           {Math.round(volume * 100)}
         </span>
       </div>
+
+      {/* "Tap anywhere" hint when autoplay was blocked */}
+      {needsInteraction && !playing && (
+        <div className="absolute -top-12 right-0 bg-brand-ink text-background mono text-[10px] uppercase tracking-widest px-3 py-1.5 rounded-full border-2 border-brand-pink shadow-brutal-sm whitespace-nowrap animate-pulse pointer-events-none">
+          ♪ Tap anywhere to start
+        </div>
+      )}
 
       {/* Main toggle */}
       <button
